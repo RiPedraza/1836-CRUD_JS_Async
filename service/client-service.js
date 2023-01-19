@@ -1,70 +1,51 @@
-//backticks
-const crearNuevaLinea = (nombre, email) => {
-  const linea = document.createElement("tr");
-  const contenido = `
-    <td class="td" data-td>
-      ${nombre}
-    </td>
-    <td>${email}</td>
-    <td>
-      <ul class="table__button-control">
-        <li>
-          <a
-            href="../screens/editar_cliente.html"
-            class="simple-button simple-button--edit"
-          >
-            Editar
-          </a>
-        </li>
-        <li>
-          <button class="simple-button simple-button--delete" type="button">
-            Eliminar
-          </button>
-        </li>
-      </ul>
-    </td>
-  `;
-  linea.innerHTML = contenido;
-  return linea;
-};
-
-const table = document.querySelector("[data-table]");
-
 //Abrir http (método,url)
-
 // CRUD   - Métodos HTTP
 // Create - POST
 // Read   - GET
 // Update - PUT/PATCH
 // Delete - DELETE
 
-const listaClientes = () => {
-  const promise = new Promise((resolve, reject) => {
-    const http = new XMLHttpRequest();
-    http.open("GET", "http://localhost:3000/perfiles");
+//Usando Fetch API (sin usar llaves y el return dentro de la funcion anonima)
+const listaClientes = () => 
+fetch("http://localhost:3000/perfil").then((repuesta) => repuesta.json()); //aca solo tomamos el exito de la repuesta.
 
-    http.send();
-
-    http.onload = () => {
-      const response = JSON.parse(http.response);
-      if (http.status >= 400) {
-        reject(response);
-      } else {
-        resolve(response);
-      }
-    };
+//para el formulario
+const crearCliente = (nombre,email) => {
+ return fetch("http://localhost:3000/perfil", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({nombre,email,id:uuid.v4()})
   });
-  return promise;
 };
 
-listaClientes()
-  .then((data) => {
-    data.forEach((perfil) => {
-      const nuevaLinea = crearNuevaLinea(perfil.nombre, perfil.email);
-      table.appendChild(nuevaLinea);
-    });
+const eliminarCliente = (id) => {
+  return fetch(`http://localhost:3000/perfil/${id}`,{
+    method:"DELETE" //Borrar un cliente utilizando el verbo http DELETE
   })
-  .catch((error) => alert("Ocurrió un error"));
+}
 
-// console.log(data);
-//
+const detalleCliente = (id) =>{
+  return fetch(`http://localhost:3000/perfil/${id}`).then((repuesta) => repuesta.json());
+}
+
+const actualizarCliente = (nombre,email,id) => {
+  return fetch(`http://localhost:3000/perfil/${id}`,{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({nombre,email})
+  })
+  .then((repuesta) => repuesta)
+  .catch((err) => console.log(err));
+}
+
+
+//ejemplos de verbo HTTP: GET, POST, PUT (edita/reemplaza datos), PATCH (actualiza parcialmente los datos), DELETE
+//Todos estos verbos se utilizan ampliamente en el mundo web. Especialmente cuando usamos el modelo REST.
+
+export const clientServices = {
+  listaClientes,
+  crearCliente,
+  eliminarCliente,
+  detalleCliente,
+  actualizarCliente
+}
